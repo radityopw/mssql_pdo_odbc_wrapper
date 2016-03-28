@@ -85,7 +85,7 @@ if (! extension_loaded('mssql') && extension_loaded('pdo_odbc')) {
 	}
 
 	function mssql_connect($servername, $username, $password, $new_link = false) {
-		$pdo = new MSSQL_PDO('sqlsrv:Server='.$servername, $username, $password);
+		$pdo = new MSSQL_PDO('odbc:'.$servername, $username, $password);
 		$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 				$pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('MSSQL_PDOStatement', array($pdo)));
 		mssql_last_link($pdo);
@@ -172,12 +172,16 @@ if (! extension_loaded('mssql') && extension_loaded('pdo_odbc')) {
 
 		// $stmt = $link_identifier->query($query);
 		$driver_options = array(
-				PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL,
-				PDO::SQLSRV_ATTR_CURSOR_SCROLL_TYPE => PDO::SQLSRV_CURSOR_BUFFERED
+				PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL
 		);
 		$stmt = $link_identifier->prepare($query, $driver_options);
-		$return = $stmt->execute();
-
+		
+		$return = false;
+		try{
+			$return = $stmt->execute();
+		} catch(Exception $e){
+			
+		}
 		// Match mssql_query behavior
 		if ($return) {
 			$rows = $stmt->rowCount();
